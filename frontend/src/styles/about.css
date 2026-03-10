@@ -1,0 +1,94 @@
+@import "../styles/variables.css";
+
+/* --- About Page General --- */
+.about-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  text-align: center;
+  font-family: var(--font-main);
+  color: var(--color-dark-purple);
+  background: var(--color-lightest);
+}
+
+/* --- Page Heading --- */
+.about-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: var(--color-regular-purple);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* --- Paragraph --- */
+.about-page p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-bottom: 3rem;
+  color: var(--color-muted-purple);
+}
+
+/* --- About Cards Container --- */
+.about-cards {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+/* --- Individual About Card --- */
+.about-card {
+  background: #fff;
+  padding: 2rem 1.5rem;
+  border-radius: 16px;
+  width: 280px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.about-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: var(--color-regular-purple);
+}
+
+.about-card p {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-muted-purple);
+}
+
+.gallery-title {
+  text-align: center;
+  margin: 2rem 0 1rem;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--color-dark-purple);
+}
+
+.hospital-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.hospital-gallery img {
+  width: 100%;
+  height: 200px; /* sabhi images ek hi height me */
+  object-fit: cover; /* crop karke fit karega, distort nahi karega */
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(16, 9, 29, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hospital-gallery img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(16, 9, 29, 0.2);
+  border: 3px solid var(--color-regular-purple);
+}

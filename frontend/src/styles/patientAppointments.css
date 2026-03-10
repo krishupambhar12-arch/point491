@@ -1,0 +1,103 @@
+@import './variables.css';
+
+/* -------- Page Layout -------- */
+.dashboard-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-lightest);
+  font-family: var(--font-main);
+}
+
+/* Sidebar ke baad content */
+.appointments-container {
+  margin-left: 260px; /* Sidebar space */
+  padding: 40px;
+  width: calc(100% - 260px);
+  box-sizing: border-box;
+}
+
+/* Title */
+.appointments-container h2 {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  color: var(--color-dark-purple);
+}
+
+/* Table box */
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+/* Table cells */
+.appointments-table th,
+.appointments-table td {
+  padding: 15px 20px;
+  text-align: left;
+  font-size: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.appointments-table th {
+  background: var(--color-regular-purple);
+  color: #fff;
+  font-weight: 600;
+}
+
+.appointments-table tr:hover {
+  background-color: #f9f5fc;
+}
+
+/* -------- Status Colors -------- */
+.status.confirmed {
+  color: green;
+  font-weight: 600;
+}
+
+.status.pending {
+  color: orange;
+  font-weight: 600;
+}
+
+.status.cancelled {
+  color: red;
+  font-weight: 600;
+}
+
+/* -------- No Data -------- */
+.no-appointments {
+  font-size: 16px;
+  color: var(--color-deep-purple);
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* Loading and Error States */
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 40px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.loading-container p {
+  font-size: 16px;
+  color: var(--color-muted-purple);
+}
+
+.error-container p {
+  color: #dc3545;
+  font-size: 16px;
+}

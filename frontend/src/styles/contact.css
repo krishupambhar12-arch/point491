@@ -1,0 +1,151 @@
+@import "../styles/variables.css";
+
+/* --- Contact Page General --- */
+.contact-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  font-family: var(--font-main);
+  color: var(--color-dark-purple);
+  background: var(--color-lightest);
+  text-align: center;
+}
+
+/* --- Heading --- */
+.contact-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--color-regular-purple);
+  font-weight: 700;
+}
+
+.contact-page p {
+  font-size: 1.1rem;
+  margin-bottom: 3rem;
+  color: var(--color-muted-purple);
+  line-height: 1.6;
+}
+
+/* --- Contact Container --- */
+.contact-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+/* --- Contact Form --- */
+.contact-form {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 350px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-form input,
+.contact-form textarea {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--color-muted-purple);
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  resize: none;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  border-color: var(--color-regular-purple);
+  box-shadow: 0 0 6px rgba(104, 80, 123, 0.3);
+}
+
+.submit-btn {
+  background: #7b638D;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: var(--color-secondary);
+  transform: translateY(-2px);
+}
+
+/* --- Contact Info --- */
+.contact-info {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 16px;
+  width: 300px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  text-align: left;
+}
+
+.contact-info h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--color-regular-purple);
+}
+
+.contact-info p {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-muted-purple);
+}
+
+/* --- Social Media Icons --- */
+.social-icons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.social-icon {
+  font-size: 1.5rem;
+  text-decoration: none;
+  color: var(--color-muted-purple);
+  transition: color 0.3s ease;
+}
+
+.social-icon:hover {
+  color: var(--color-regular-purple);
+}
+
+/* --- Map Container --- */
+.map-container {
+  margin-top: 1rem;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+/* Convert white PNG to your theme color */
+.social-icon {
+  width: 25px;           /* small size */
+  height: 25px;
+  object-fit: contain;
+  filter: invert(13%) sepia(80%) saturate(5000%) hue-rotate(260deg) brightness(95%) contrast(90%);
+  transition: transform 0.3s ease, filter 0.3s ease;
+  cursor: pointer;
+}
+
+.social-icon:hover {
+  transform: scale(1.1); /* hover effect */
+  filter: invert(30%) sepia(90%) saturate(5000%) hue-rotate(260deg) brightness(90%) contrast(85%);
+}

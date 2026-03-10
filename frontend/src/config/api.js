@@ -1,0 +1,90 @@
+// Backend base URL 
+const BASE_URL = "http://localhost:5000";
+
+export const API = {
+  REGISTER: `${BASE_URL}/user/register`,
+  LOGIN: `${BASE_URL}/user/login`,
+  ATTORNEY_LOGIN: `${BASE_URL}/attorney/login`,
+  FORGOT_PASSWORD: `${BASE_URL}/user/forgot-password`,
+  ATTORNEY_FORGOT_PASSWORD: `${BASE_URL}/user/attorney-forgot-password`,
+  // Attorney APIs
+  ATTORNEY_DETAILS: `${BASE_URL}/attorney/details`,
+  ATTORNEY_DASHBOARD: `${BASE_URL}/attorney/dashboard`,
+  ATTORNEY_PROFILE_UPDATE: `${BASE_URL}/attorney/profile`,
+  ATTORNEY_APPOINTMENTS: `${BASE_URL}/attorney/appointments`,
+  ATTORNEY_UPDATE_APPOINTMENT_STATUS: `${BASE_URL}/attorney/appointments`,
+  ALL_ATTORNEYS: `${BASE_URL}/attorney/all`,
+  BOOK_APPOINTMENT: `${BASE_URL}/attorney/book-appointment`,
+  // Client APIs
+  CLIENT_DASHBOARD: `${BASE_URL}/user/dashboard`,
+  CLIENT_APPOINTMENTS: `${BASE_URL}/user/appointments`,
+  CLIENT_PROFILE: `${BASE_URL}/user/profile`,
+  CLIENT_PROFILE_UPDATE: `${BASE_URL}/user/profile`,
+  // Feedback APIs
+  SUBMIT_FEEDBACK: `${BASE_URL}/user/feedback`,
+  GET_USER_FEEDBACK: `${BASE_URL}/user/feedback`,
+  // Admin APIs
+  ADMIN_LOGIN: `${BASE_URL}/admin/login`,
+  ADMIN_DASHBOARD: `${BASE_URL}/admin/dashboard`,
+  ADMIN_APPOINTMENTS: `${BASE_URL}/admin/appointments`,
+  ADMIN_UPDATE_APPOINTMENT_STATUS: `${BASE_URL}/admin/appointments`,
+  ADMIN_DELETE_APPOINTMENT: `${BASE_URL}/admin/appointments`,
+  ADMIN_USERS: `${BASE_URL}/admin/users`,
+  ADMIN_CREATE_USER: `${BASE_URL}/admin/users`,
+  ADMIN_DELETE_USER: `${BASE_URL}/admin/users`,
+  ADMIN_ALL_USERS: `${BASE_URL}/admin/all-users`,
+  ADMIN_RESTORE_USER: `${BASE_URL}/admin/users`,
+  ADMIN_DOCTORS: `${BASE_URL}/admin/doctors`,
+  ADMIN_CODES: `${BASE_URL}/admin/codes`,
+  ADMIN_CODES_CHECK: `${BASE_URL}/admin/codes/check`,
+  ADMIN_CODES_DELETED: `${BASE_URL}/admin/codes/deleted`,
+  ADMIN_CODES_RESTORE: `${BASE_URL}/admin/codes`,
+  ADMIN_CREATE: `${BASE_URL}/admin/create`,
+  ADMIN_LIST: `${BASE_URL}/admin/list`,
+  ADMIN_UPDATE_PERMISSIONS: `${BASE_URL}/admin/permissions`,
+  ADMIN_DELETE: `${BASE_URL}/admin`,
+  ADMIN_MARK_EXPIRED: `${BASE_URL}/admin/mark-expired`,
+  ADMIN_FEEDBACK: `${BASE_URL}/admin/feedback`,
+  ADMIN_UPDATE_FEEDBACK_STATUS: `${BASE_URL}/admin/feedback`,
+  ADMIN_RESPOND_FEEDBACK: `${BASE_URL}/admin/feedback`,
+  ADMIN_DELETE_FEEDBACK: `${BASE_URL}/admin/feedback`,
+  // Lab Test APIs
+  ALL_LAB_TESTS: `${BASE_URL}/user/lab-tests`,
+  BOOK_LAB_TEST: `${BASE_URL}/user/book-lab-test`,
+  CLIENT_LAB_TEST_BOOKINGS: `${BASE_URL}/user/lab-test-bookings`,
+  // Admin Lab Test APIs
+  ADMIN_LAB_TESTS: `${BASE_URL}/admin/lab-tests`,
+  ADMIN_CREATE_LAB_TEST: `${BASE_URL}/admin/lab-tests`,
+  ADMIN_UPDATE_LAB_TEST: `${BASE_URL}/admin/lab-tests`,
+  ADMIN_DELETE_LAB_TEST: `${BASE_URL}/admin/lab-tests`,
+  // Admin Lab Test Bookings APIs
+  ADMIN_LAB_TEST_BOOKINGS: `${BASE_URL}/admin/lab-test-bookings`,
+  ADMIN_UPDATE_LAB_TEST_BOOKING_STATUS: `${BASE_URL}/admin/lab-test-bookings`,
+  ADMIN_DELETE_LAB_TEST_BOOKING: `${BASE_URL}/admin/lab-test-bookings`,
+  // Admin Service APIs
+  ADMIN_SERVICES: `${BASE_URL}/admin/services`,
+  ADMIN_CREATE_SERVICE: `${BASE_URL}/admin/services`,
+  ADMIN_UPDATE_SERVICE: `${BASE_URL}/admin/services`,
+  ADMIN_DELETE_SERVICE: `${BASE_URL}/admin/services`,
+  ADMIN_SERVICES_DELETED: `${BASE_URL}/admin/services/deleted`,
+  ADMIN_SERVICES_RESTORE: `${BASE_URL}/admin/services`,
+  // Public Services API
+  ALL_SERVICES: `${BASE_URL}/services`,
+  // Consultation APIs
+  CONSULTATION_ATTORNEYS: `${BASE_URL}/user/consultation/attorneys`,
+  CREATE_CONSULTATION: `${BASE_URL}/user/consultation`,
+  CLIENT_CONSULTATIONS: `${BASE_URL}/user/consultations`,
+  CONSULTATION_MESSAGES: `${BASE_URL}/user/consultation`,
+  SEND_CONSULTATION_MESSAGE: `${BASE_URL}/user/consultation`,
+  ATTORNEY_CONSULTATIONS: `${BASE_URL}/attorney/consultations`,
+  ATTORNEY_CONSULTATION_MESSAGES: `${BASE_URL}/attorney/consultation`,
+  ATTORNEY_SEND_CONSULTATION_MESSAGE: `${BASE_URL}/attorney/consultation`,
+  // AI Advisor API
+  AI_ADVICE: `${BASE_URL}/ai/advice`,
+  // Admin Consultation APIs
+  ADMIN_CONSULTATIONS: `${BASE_URL}/admin/consultations`,
+  ADMIN_CONSULTATION_MESSAGES: `${BASE_URL}/admin/consultations`,
+  ADMIN_REPLY_CONSULTATION: `${BASE_URL}/admin/consultations`,
+  PROMOTE_TO_ADMIN: `${BASE_URL}/admin/promote-to-admin`,
+  DELETE_USER_DATA: `${BASE_URL}/admin/delete-user-data`,
+};

@@ -1,0 +1,109 @@
+@import './variables.css';
+
+.appointments-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-lightest);
+  font-family: var(--font-main);
+}
+
+.appointments-content {
+  margin-left: 260px; /* Sidebar space */
+  padding: 40px;
+  width: calc(100% - 260px);
+}
+
+/* Title */
+.appointments-content h1 {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  color: var(--color-dark-purple);
+}
+
+/* Table box */
+.appointments-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+
+  /* 👇 Extra spacing so it doesn’t stick */
+  margin-top: 20px;
+  margin-bottom: 30px;
+}
+
+/* Table cells */
+.appointments-table th, 
+.appointments-table td {
+  padding: 15px 20px;
+  text-align: left;
+  font-size: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.appointments-table th {
+  background: var(--color-regular-purple);
+  color: #fff;
+  font-weight: 600;
+}
+
+.appointments-table tr:hover {
+  background-color: #f9f5fc;
+}
+
+/* Status Colors */
+.status.upcoming {
+  color: var(--color-regular-purple);
+  font-weight: 600;
+}
+
+.status.completed {
+  color: green;
+  font-weight: 600;
+}
+
+.status.pending {
+  color: #ffc107;
+  font-weight: 600;
+}
+
+.status.confirmed {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status.cancelled {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.status.rejected {
+  color: #6c757d;
+  font-weight: 600;
+}
+
+/* Status Select Dropdown */
+.status-select {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: #fff;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: var(--color-regular-purple);
+  box-shadow: 0 0 0 2px rgba(128, 0, 128, 0.1);
+}
+
+.status-select:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.6;
+}

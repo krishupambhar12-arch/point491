@@ -1,0 +1,47 @@
+@import "../styles/variables.css";
+
+/* --- Footer General --- */
+.site-footer {
+  padding: 3rem 1rem;
+  background: var(--color-secondary); /* palette dark */
+  color: var(--color-white);         /* light text */
+  text-align: center;
+  font-family: var(--font-main);
+}
+
+/* --- Footer Text --- */
+.site-footer p {
+  font-size: 1rem;
+  margin: 0;
+  color: var(--color-white); /* consistent text color */
+}
+
+/* --- Footer Links Container --- */
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+/* --- Individual Footer Text --- */
+.footer-text {
+  font-size: 1rem;
+  color: var(--color-primary); /* subtle text */
+  transition: color 0.3s ease;
+}
+
+/* Optional hover effect */
+.footer-text:hover {
+  color: var(--color-white);
+}
+
+/* Clickable footer link (Feedback) */
+.footer-link {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}

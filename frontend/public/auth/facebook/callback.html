@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Social Auth Callback</title>
+</head>
+<body>
+    <script>
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const provider = window.location.pathname.includes('google') ? 'google' : 
+                           window.location.pathname.includes('facebook') ? 'facebook' : 'linkedin';
+            
+            if (code) {
+                // Send the code to the backend
+                fetch(`http://localhost:5000/auth/${provider}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ code })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.token) {
+                        window.opener.postMessage({
+                            type: 'social-auth-success',
+                            token: data.token,
+                            user: data.user
+                        }, window.location.origin);
+                    } else {
+                        window.opener.postMessage({
+                            type: 'social-auth-error',
+                            error: data.message || 'Authentication failed'
+                        }, window.location.origin);
+                    }
+                    window.close();
+                })
+                .catch(error => {
+                    console.error('Auth error:', error);
+                    window.opener.postMessage({
+                        type: 'social-auth-error',
+                        error: 'Authentication failed: ' + error.message
+                    }, window.location.origin);
+                    window.close();
+                });
+            } else {
+                window.opener.postMessage({
+                    type: 'social-auth-error',
+                    error: 'No authorization code received'
+                }, window.location.origin);
+                window.close();
+            }
+        };
+    </script>
+</body>
+</html>

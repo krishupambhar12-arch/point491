@@ -1,0 +1,312 @@
+@import './variables.css';
+
+/* Doctor Listing Page Styles */
+.doctor-listing-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 80vh;
+}
+
+/* Search and Filter Section */
+.search-filter-section {
+  background: linear-gradient(135deg, var(--color-regular-purple) 0%, var(--color-dark-purple) 100%);
+  padding: 30px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.search-bar {
+  display: flex;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 10px 0 0 10px;
+  font-size: 16px;
+  outline: none;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-btn {
+  padding: 15px 20px;
+  background: var(--color-regular-purple);
+  color: white;
+  border: none;
+  border-radius: 0 10px 10px 0;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.search-btn:hover {
+  background: var(--color-dark-purple);
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.filter-section label {
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.filter-section select {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+/* Results Info */
+.results-info {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.results-info h2 {
+  color: var(--color-nearly-black);
+  margin-bottom: 10px;
+  font-size: 28px;
+}
+
+.results-info p {
+  color: var(--color-muted-purple);
+  font-size: 16px;
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+  color: var(--color-muted-purple);
+}
+
+/* Doctors Grid */
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+  margin-bottom: 40px;
+}
+
+/* Doctor Card */
+.doctor-card {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.doctor-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.doctor-image {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.doctor-image img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #f0f0f0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.doctor-info h3 {
+  color: var(--color-nearly-black);
+  font-size: 20px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.doctor-info p {
+  margin: 5px 0;
+  color: var(--color-muted-purple);
+  font-size: 14px;
+  text-align: center;
+}
+
+.doctor-info .specialization {
+  color: var(--color-regular-purple);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.doctor-info .fees {
+  color: var(--color-dark-purple);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.rating {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.rating span {
+  font-size: 14px;
+  color: var(--color-muted-purple);
+}
+
+.rating .available {
+  background: var(--color-regular-purple);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Doctor Actions */
+.doctor-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.book-appointment-btn {
+  background: linear-gradient(135deg, var(--color-regular-purple) 0%, var(--color-dark-purple) 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.book-appointment-btn:hover {
+  transform: translateY(-2px);
+}
+
+.view-profile-btn {
+  background: transparent;
+  color: var(--color-regular-purple);
+  border: 2px solid var(--color-regular-purple);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-profile-btn:hover {
+  background: var(--color-regular-purple);
+  color: white;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: 50px;
+  grid-column: 1 / -1;
+}
+
+.no-results p {
+  color: var(--color-muted-purple);
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+.no-results button {
+  background: var(--color-regular-purple);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.no-results button:hover {
+  background: var(--color-dark-purple);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .doctor-listing-container {
+    padding: 15px;
+  }
+  
+  .search-filter-section {
+    padding: 20px;
+  }
+  
+  .search-bar {
+    flex-direction: column;
+  }
+  
+  .search-bar input {
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .search-btn {
+    border-radius: 10px;
+  }
+  
+  .filter-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-section select {
+    min-width: auto;
+  }
+  
+  .doctors-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .doctor-card {
+    padding: 20px;
+  }
+  
+  .doctor-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-filter-section {
+    padding: 15px;
+  }
+  
+  .doctor-card {
+    padding: 15px;
+  }
+  
+  .doctor-image img {
+    width: 100px;
+    height: 100px;
+  }
+}

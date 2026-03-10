@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload to Display Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: black; }
+        .file-input { margin: 10px 0; }
+        .preview { max-width: 100px; max-height: 100px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; }
+        .service-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .service-icon { margin-bottom: 10px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .icon-display { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .icon-display img { width: 50px; height: 50px; object-fit: cover; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🖼️ Upload to Display Flow Test</h1>
+    
+    <div class="test-section">
+        <h2>Step 1: Upload Service Icon</h2>
+        <p>Test uploading a service icon file through the admin API.</p>
+        
+        <div class="file-input">
+            <label for="testFile">Select an image file (up to 500MB):</label><br>
+            <input type="file" id="testFile" accept="image/*" onchange="previewFile(this)">
+            <div id="preview"></div>
+        </div>
+        
+        <div>
+            <input type="text" id="serviceName" placeholder="Service Name" value="Test Service with Custom Icon"><br><br>
+            <input type="text" id="serviceDesc" placeholder="Description" value="This service tests custom icon upload and display"><br><br>
+        </div>
+        
+        <button class="btn-success" onclick="uploadService()">Upload Service</button>
+        <div id="uploadResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 2: Verify Admin Display</h2>
+        <p>Check if the uploaded icon appears correctly in the admin services list.</p>
+        
+        <button class="btn-primary" onclick="checkAdminServices">Check Admin Services</button>
+        <div id="adminResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 3: Verify User Display</h2>
+        <p>Check if the uploaded icon appears correctly on the user-facing site.</p>
+        
+        <button class="btn-warning" onclick="checkUserServices">Check User Services</button>
+        <div id="userResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Step 4: Direct File Access Test</h2>
+        <p>Test if the uploaded file is accessible via direct URL.</p>
+        
+        <button class="btn-primary" onclick="testFileAccess()">Test File Access</button>
+        <div id="fileResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000';
+        let selectedFile = null;
+        let uploadedServiceId = null;
+        let uploadedFileName = null;
+        let authToken = null;
+        
+        // Auto-login as admin for testing
+        async function loginAsAdmin() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@gmail.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    authToken = data.token;
+                    console.log('✅ Admin login successful');
+                } else {
+                    console.error('❌ Login failed:', data.message);
+                }
+            } catch (error) {
+                console.error('❌ Login error:', error);
+            }
+        }
+        
+        function previewFile(input) {
+            const file = input.files[0];
+            const preview = document.getElementById('preview');
+            
+            if (file) {
+                selectedFile = file;
+                preview.innerHTML = `
+                    <div>
+                        <strong>Selected file:</strong> ${file.name}<br>
+                        <strong>Size:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+                        <strong>Type:</strong> ${file.type}<br>
+                        <img src="${URL.createObjectURL(file)}" class="preview" alt="Preview">
+                    </div>
+                `;
+            } else {
+                selectedFile = null;
+                preview.innerHTML = '';
+            }
+        }
+        
+        async function uploadService() {
+            const resultDiv = document.getElementById('uploadResult');
+            const serviceName = document.getElementById('serviceName').value;
+            const serviceDesc = document.getElementById('serviceDesc').value;
+            
+            if (!serviceName || !selectedFile) {
+                resultDiv.innerHTML = '<div class="error">❌ Service name and file are required</div>';
+                return;
+            }
+            
+            if (!authToken) {
+                await loginAsAdmin();
+                if (!authToken) {
+                    resultDiv.innerHTML = '<div class="error">❌ Failed to authenticate</div>';
+                    return;
+                }
+            }
+            
+            resultDiv.innerHTML = '⏳ Uploading service...';
+            
+            const formData = new FormData();
+            formData.append('service_name', serviceName);
+            formData.append('description', serviceDesc);
+            formData.append('category', 'Legal Service');
+            formData.append('icon', 'Custom');
+            formData.append('iconFile', selectedFile);
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/services`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    uploadedServiceId = data.service.id;
+                    uploadedFileName = data.service.icon_file;
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Service uploaded successfully!</div>
+                        <div><strong>Service ID:</strong> ${data.service.id}</div>
+                        <div><strong>Name:</strong> ${data.service.service_name}</div>
+                        <div><strong>Icon File:</strong> ${data.service.icon_file}</div>
+                        <div><strong>Icon:</strong> ${data.service.icon}</div>
+                        <div class="icon-display">
+                            <strong>Uploaded Icon:</strong>
+                            <img src="${API_BASE}/uploads/service-icons/${data.service.icon_file}" 
+                                 alt="Service icon" 
+                                 style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #ddd;" />
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Upload failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function checkAdminServices() {
+            const resultDiv = document.getElementById('adminResult');
+            resultDiv.innerHTML = '⏳ Loading admin services...';
+            
+            if (!authToken) {
+                await loginAsAdmin();
+                if (!authToken) {
+                    resultDiv.innerHTML = '<div class="error">❌ Failed to authenticate</div>';
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/services`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const servicesHtml = data.services.map(service => `
+                        <div class="service-card">
+                            <div class="icon-display">
+                                <strong>Icon:</strong>
+                                ${service.icon_file ? 
+                                    `<img src="${API_BASE}/uploads/service-icons/${service.icon_file}" 
+                                         style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #ddd;" 
+                                         alt="Service icon" />` :
+                                    `<div style="width: 50px; height: 50px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📁</div>`
+                                }
+                            </div>
+                            <div><strong>Name:</strong> ${service.service_name}</div>
+                            <div><strong>Description:</strong> ${service.description || 'None'}</div>
+                            <div><strong>Category:</strong> ${service.category}</div>
+                            <div><strong>Icon File:</strong> ${service.icon_file || 'None'}</div>
+                            ${service.id === uploadedServiceId ? '<div style="color: green; font-weight: bold;">✅ This is our uploaded service!</div>' : ''}
+                        </div>
+                    `).join('');
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Found ${data.services.length} services in admin</div>
+                        ${servicesHtml}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Failed to load admin services: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function checkUserServices() {
+            const resultDiv = document.getElementById('userResult');
+            resultDiv.innerHTML = '⏳ Loading user services...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/services`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const servicesHtml = data.services.map(service => `
+                        <div class="service-card">
+                            <div class="icon-display">
+                                <strong>Icon:</strong>
+                                ${service.icon_file ? 
+                                    `<img src="${API_BASE}/uploads/service-icons/${service.icon_file}" 
+                                         style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #ddd;" 
+                                         alt="Service icon" />` :
+                                    `<div style="width: 50px; height: 50px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 20px;">📁</div>`
+                                }
+                            </div>
+                            <div><strong>Name:</strong> ${service.service_name}</div>
+                            <div><strong>Description:</strong> ${service.description || 'None'}</div>
+                            <div><strong>Category:</strong> ${service.category}</div>
+                            <div><strong>Icon File:</strong> ${service.icon_file || 'None'}</div>
+                            ${service.id === uploadedServiceId ? '<div style="color: green; font-weight: bold;">✅ This is our uploaded service!</div>' : ''}
+                        </div>
+                    `).join('');
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Found ${data.services.length} services on user site</div>
+                        ${servicesHtml}
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Failed to load user services: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testFileAccess() {
+            const resultDiv = document.getElementById('fileResult');
+            
+            if (!uploadedFileName) {
+                resultDiv.innerHTML = '<div class="warning">⚠️ Please upload a service first</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '⏳ Testing file access...';
+            
+            const fileUrl = `${API_BASE}/uploads/service-icons/${uploadedFileName}`;
+            
+            try {
+                // Test if file is accessible
+                const response = await fetch(fileUrl, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ File is accessible!</div>
+                        <div><strong>File URL:</strong> <a href="${fileUrl}" target="_blank">${fileUrl}</a></div>
+                        <div><strong>File Size:</strong> ${response.headers.get('content-length')} bytes</div>
+                        <div><strong>Content Type:</strong> ${response.headers.get('content-type')}</div>
+                        <div class="icon-display">
+                            <strong>Direct Image:</strong>
+                            <img src="${fileUrl}" 
+                                 style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #ddd;" 
+                                 alt="Direct file access test" />
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ File not accessible: ${response.status}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error accessing file: ${error.message}</div>`;
+            }
+        }
+        
+        // Initialize
+        loginAsAdmin();
+    </script>
+</body>
+</html>

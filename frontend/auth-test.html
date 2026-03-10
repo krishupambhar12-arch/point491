@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .success { color: green; }
+        .error { color: red; }
+        .token { background: #f0f0f0; padding: 10px; border-radius: 4px; word-break: break-all; font-family: monospace; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Admin Authentication Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Admin Login</h2>
+        <button class="btn-primary" onclick="testLogin()">Test Login API</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Current Token</h2>
+        <div id="currentToken" class="token">No token stored</div>
+        <button class="btn-danger" onclick="clearToken()">Clear Token</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Dashboard Access</h2>
+        <button class="btn-primary" onclick="testDashboard()">Test Dashboard API</button>
+        <div id="dashboardResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000';
+        
+        function updateTokenDisplay() {
+            const token = localStorage.getItem('token');
+            const tokenDiv = document.getElementById('currentToken');
+            if (token) {
+                tokenDiv.innerHTML = `<strong>Token:</strong> ${token}`;
+            } else {
+                tokenDiv.innerHTML = 'No token stored';
+            }
+        }
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = 'Testing login...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'admin@gmail.com',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('role', data.admin.role);
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Login Successful!</div>
+                        <div><strong>Name:</strong> ${data.admin.name}</div>
+                        <div><strong>Email:</strong> ${data.admin.email}</div>
+                        <div><strong>Role:</strong> ${data.admin.role}</div>
+                        <div><strong>Permissions:</strong> ${data.admin.permissions.join(', ')}</div>
+                    `;
+                    updateTokenDisplay();
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Login Failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        async function testDashboard() {
+            const resultDiv = document.getElementById('dashboardResult');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                resultDiv.innerHTML = `<div class="error">❌ No token found. Please login first.</div>`;
+                return;
+            }
+            
+            resultDiv.innerHTML = 'Testing dashboard access...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ Dashboard Access Successful!</div>
+                        <div><strong>Admin:</strong> ${data.admin.name}</div>
+                        <div><strong>Total Clients:</strong> ${data.stats.totalClients}</div>
+                        <div><strong>Total Attorneys:</strong> ${data.stats.totalAttorneys}</div>
+                        <div><strong>Total Appointments:</strong> ${data.stats.totalAppointments}</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Dashboard Access Failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+        
+        function clearToken() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            updateTokenDisplay();
+            document.getElementById('loginResult').innerHTML = '';
+            document.getElementById('dashboardResult').innerHTML = '';
+        }
+        
+        // Initialize
+        updateTokenDisplay();
+    </script>
+</body>
+</html>

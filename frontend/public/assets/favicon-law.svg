@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background circle using light palette color -->
+  <rect width="64" height="64" rx="12" ry="12" fill="#E6DDD0" />
+
+  <!-- Scales of justice icon in dark palette color -->
+  <g fill="none" stroke="#1E252B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Center pillar -->
+    <line x1="32" y1="14" x2="32" y2="38" />
+    <line x1="26" y1="20" x2="38" y2="20" />
+
+    <!-- Crossbar -->
+    <line x1="20" y1="24" x2="44" y2="24" />
+
+    <!-- Left chain -->
+    <line x1="24" y1="24" x2="20" y2="32" />
+    <line x1="24" y1="24" x2="28" y2="32" />
+
+    <!-- Right chain -->
+    <line x1="40" y1="24" x2="36" y2="32" />
+    <line x1="40" y1="24" x2="44" y2="32" />
+
+    <!-- Left scale pan -->
+    <path d="M18 32 L30 32 C29 36 26 39 24 39 C22 39 19 36 18 32 Z" fill="#1E252B" />
+
+    <!-- Right scale pan -->
+    <path d="M34 32 L46 32 C45 36 42 39 40 39 C38 39 35 36 34 32 Z" fill="#1E252B" />
+
+    <!-- Base -->
+    <line x1="24" y1="44" x2="40" y2="44" />
+    <rect x="26" y="44" width="12" height="4" fill="#1E252B" stroke="none" />
+  </g>
+</svg>
+
