@@ -12,7 +12,7 @@ import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import Register from "./pages/Register";
 import AttorneyDetailsForm from "./pages/AttorneyDetailsForm";
 import AttorneyDashboard from "./pages/AttorneyDashboard";
-import AttorneyProfile from "./pages/DoctorProfile";
+import AttorneyProfile from "./pages/AttorneyProfile";
 import AttorneyAppointments from "./pages/AttorneyAppointments";
 import ClientDashboard from "./pages/ClientDashboard";
 import ClientProfile from "./pages/ClientProfile";

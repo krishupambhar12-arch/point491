@@ -16,21 +16,18 @@ const PublicAttorneyProfile = () => {
 
   const fetchAttorneyDetails = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(API.ATTORNEY_PROFILE_UPDATE, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const res = await fetch(API.ALL_ATTORNEYS);
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to load attorney details");
 
-      console.log("🔍 Attorney profile data:", data);
-      setAttorney(data);
+      const attorneyData = data.attorneys?.find(d => d.id === attorneyId || d._id === attorneyId);
+      if (attorneyData) {
+        setAttorney(attorneyData);
+      } else {
+        setMessage("Attorney not found");
+      }
     } catch (error) {
-      console.error("Error fetching attorney details:", error);
+    console.error("Error fetching attorney details:", error);
       setMessage("Failed to load attorney details");
     } finally {
       setLoading(false);

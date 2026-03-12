@@ -11,6 +11,8 @@ const AdminAppointments = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [showBookModal, setShowBookModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewAppointment, setViewAppointment] = useState(null);
   const [users, setUsers] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [actionLoading, setActionLoading] = useState({
@@ -73,7 +75,12 @@ const AdminAppointments = () => {
 
   const fetchDoctors = async () => {
     try {
-      const response = await fetch(API.ALL_DOCTORS);
+      const response = await fetch(API.ADMIN_DOCTORS, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       const data = await response.json();
       if (response.ok) {
         setDoctors(data.doctors || []);
@@ -370,13 +377,27 @@ const AdminAppointments = () => {
                       </select>
                     </td>
                     <td>
-                      <button 
-                        onClick={() => deleteAppointment(appointment.id)}
-                        className="delete-btn"
-                        disabled={actionLoading.deleting === appointment.id}
-                      >
-                        {actionLoading.deleting === appointment.id ? 'Please wait...' : 'Delete'}
-                      </button>
+                      <div className="action-buttons">
+                        <button 
+                          onClick={() => {
+                            setViewAppointment(appointment);
+                            setShowViewModal(true);
+                          }}
+                          className="view-btn"
+                          title="View Details"
+                        >
+                          View
+                        </button>
+                        <button 
+                          onClick={() => deleteAppointment(appointment.id)}
+                          className="delete-btn"
+                          disabled={actionLoading.deleting === appointment.id}
+                          title="Delete Appointment"
+                        >
+                          
+                          {actionLoading.deleting === appointment.id ? 'Please wait...' : ' Delete'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )) : (
@@ -587,6 +608,111 @@ const AdminAppointments = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* View Appointment Modal */}
+        {showViewModal && viewAppointment && (
+          <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
+            <div className="modal-content view-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Appointment Details</h3>
+                <button 
+                  className="modal-close-btn"
+                  onClick={() => setShowViewModal(false)}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="modal-body">
+                <div className="detail-section">
+                  <h4>Client Information</h4>
+                  <div className="detail-row">
+                    <label>Name:</label>
+                    <span>{viewAppointment.patient?.name || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <label>Email:</label>
+                    <span>{viewAppointment.patient?.email || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <label>Phone:</label>
+                    <span>{viewAppointment.patient?.phone || 'N/A'}</span>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h4>Attorney Information</h4>
+                  <div className="detail-row">
+                    <label>Name:</label>
+                    <span>{viewAppointment.doctor?.name || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <label>Specialization:</label>
+                    <span>{viewAppointment.doctor?.specialization || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <label>Email:</label>
+                    <span>{viewAppointment.doctor?.email || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <label>Phone:</label>
+                    <span>{viewAppointment.doctor?.phone || 'N/A'}</span>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h4>Appointment Details</h4>
+                  <div className="detail-row">
+                    <label>Date:</label>
+                    <span>{viewAppointment.date}</span>
+                  </div>
+                  <div className="detail-row">
+                    <label>Time:</label>
+                    <span>{viewAppointment.time}</span>
+                  </div>
+                  <div className="detail-row">
+                    <label>Status:</label>
+                    <span className={`status-badge status-${viewAppointment.status?.toLowerCase()}`}>
+                      {viewAppointment.status}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <label>Fees:</label>
+                    <span>₹{viewAppointment.attorneyFees || 0}</span>
+                  </div>
+                </div>
+
+                <div className="detail-section">
+                  <h4>Case Information</h4>
+                  <div className="detail-row full-width">
+                    <label>Subject:</label>
+                    <span>{viewAppointment.subject || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row full-width">
+                    <label>Purpose:</label>
+                    <span>{viewAppointment.purpose || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row full-width">
+                    <label>Case Summary:</label>
+                    <span>{viewAppointment.caseSummary || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row full-width">
+                    <label>Documents:</label>
+                    <span>{viewAppointment.documents || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row full-width">
+                    <label>Desired Outcome:</label>
+                    <span>{viewAppointment.desiredOutcome || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button className="btn-close" onClick={() => setShowViewModal(false)}>
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         )}

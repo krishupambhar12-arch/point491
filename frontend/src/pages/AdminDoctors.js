@@ -333,7 +333,7 @@ const AdminDoctors = () => {
         console.log("🔍 Frontend Delete Debug - Response data:", data);
         
         if (response.ok) {
-          setMessage(`Attorney "${doctorName}" deleted successfully (data preserved in database)`);
+          setMessage(`Attorney "${doctorName}" deleted successfully. Login access has been revoked.`);
           fetchDoctors();
         } else {
           setMessage(data.message || 'Error deleting attorney');

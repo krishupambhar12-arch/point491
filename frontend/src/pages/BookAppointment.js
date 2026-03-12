@@ -118,7 +118,7 @@ const BookAppointment = () => {
       }
 
       const appointmentData = {
-        doctor_id: attorneyId,
+        attorney_id: attorneyId,
         date: formData.date,
         time: formData.time,
         subject: formData.subject,

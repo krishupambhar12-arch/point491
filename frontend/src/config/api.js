@@ -29,6 +29,7 @@ export const API = {
   ADMIN_APPOINTMENTS: `${BASE_URL}/admin/appointments`,
   ADMIN_UPDATE_APPOINTMENT_STATUS: `${BASE_URL}/admin/appointments`,
   ADMIN_DELETE_APPOINTMENT: `${BASE_URL}/admin/appointments`,
+  ADMIN_BOOK_APPOINTMENT: `${BASE_URL}/admin/appointments`,
   ADMIN_USERS: `${BASE_URL}/admin/users`,
   ADMIN_CREATE_USER: `${BASE_URL}/admin/users`,
   ADMIN_DELETE_USER: `${BASE_URL}/admin/users`,

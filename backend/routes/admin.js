@@ -665,7 +665,7 @@ router.delete("/doctors/:id", async (req, res) => {
   }
 });
 
-// DELETE CODE (SOFT DELETE)
+// DELETE CODE (SOFT DELETE) - Also deactivate corresponding attorney
 router.delete("/codes/:id", auth, async (req, res) => {
   try {
     console.log("🔍 Delete Code Debug - User role:", req.userRole);
@@ -684,16 +684,36 @@ router.delete("/codes/:id", auth, async (req, res) => {
       return res.status(404).json({ message: "Attorney not found" });
     }
 
+    console.log("🔍 Found attorney to delete:", code.email);
+
     // Soft delete - mark as inactive instead of deleting
     code.isActive = false;
     code.deletedAt = new Date();
     code.deletionReason = "Admin soft delete";
     await code.save();
 
-    console.log("✅ Attorney marked as inactive (not deleted):", code.name);
+    console.log("✅ Attorney marked as inactive in codes collection:", code.name);
+
+    // Also deactivate the corresponding attorney in the Attorney model
+    try {
+      const attorney = await Attorney.findOne({ attorneyEmail: code.email });
+      if (attorney) {
+        console.log("🔍 Found corresponding attorney in Attorney model:", attorney.attorneyEmail);
+        attorney.isActive = false;
+        attorney.deletedAt = new Date();
+        attorney.deletionReason = "Admin deletion via codes";
+        await attorney.save();
+        console.log("✅ Corresponding attorney also deactivated:", attorney.attorneyName);
+      } else {
+        console.log("⚠️ No corresponding attorney found in Attorney model for email:", code.email);
+      }
+    } catch (attorneyError) {
+      console.error("❌ Error deactivating attorney in Attorney model:", attorneyError);
+      // Continue with response even if attorney deactivation fails
+    }
 
     res.json({ 
-      message: "Attorney deleted successfully",
+      message: "Attorney deleted successfully (login access revoked)",
       attorney: {
         id: code._id,
         name: code.name,
@@ -708,7 +728,7 @@ router.delete("/codes/:id", auth, async (req, res) => {
   }
 });
 
-// RESTORE DELETED CODE
+// RESTORE DELETED CODE - Also restore corresponding attorney
 router.put("/codes/:id/restore", auth, async (req, res) => {
   try {
     if (req.userRole !== "Admin") {
@@ -732,10 +752,27 @@ router.put("/codes/:id/restore", auth, async (req, res) => {
     code.deletionReason = null;
     await code.save();
 
-    console.log("✅ Attorney restored successfully:", code.name);
+    console.log("✅ Attorney restored successfully in codes collection:", code.name);
+
+    // Also restore the corresponding attorney in the Attorney model
+    try {
+      const attorney = await Attorney.findOne({ attorneyEmail: code.email });
+      if (attorney) {
+        attorney.isActive = true;
+        attorney.deletedAt = null;
+        attorney.deletionReason = null;
+        await attorney.save();
+        console.log("✅ Corresponding attorney also restored:", attorney.attorneyName);
+      } else {
+        console.log("⚠️ No corresponding attorney found in Attorney model for email:", code.email);
+      }
+    } catch (attorneyError) {
+      console.error("❌ Error restoring attorney in Attorney model:", attorneyError);
+      // Continue with response even if attorney restoration fails
+    }
 
     res.json({
-      message: "Attorney restored successfully",
+      message: "Attorney restored successfully (login access granted)",
       attorney: {
         id: code._id,
         name: code.name,
@@ -745,6 +782,56 @@ router.put("/codes/:id/restore", auth, async (req, res) => {
     });
   } catch (error) {
     console.error("Restore code error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// QUICK FIX: Force deactivate om@gmail.com
+router.post("/force-deactivate-om", auth, async (req, res) => {
+  try {
+    console.log("🔍 Force deactivating om@gmail.com...");
+    
+    if (req.userRole !== "Admin") {
+      return res.status(403).json({ message: "Only admins can do this" });
+    }
+
+    let deactivatedInAttorney = false;
+    let deactivatedInCode = false;
+
+    // Force deactivate in Attorney model
+    const attorney = await Attorney.findOne({ attorneyEmail: "om@gmail.com" });
+    if (attorney) {
+      attorney.isActive = false;
+      attorney.deletedAt = new Date();
+      attorney.deletionReason = "Force admin deactivation";
+      await attorney.save();
+      deactivatedInAttorney = true;
+      console.log("✅ Force deactivated in Attorney model");
+    }
+
+    // Force deactivate in Code collection
+    const code = await Code.findOne({ email: "om@gmail.com" });
+    if (code) {
+      code.isActive = false;
+      code.deletedAt = new Date();
+      code.deletionReason = "Force admin deactivation";
+      await code.save();
+      deactivatedInCode = true;
+      console.log("✅ Force deactivated in Code collection");
+    }
+
+    res.json({
+      message: "Force deactivation completed",
+      results: {
+        deactivatedInAttorney,
+        deactivatedInCode,
+        attorneyFound: !!attorney,
+        codeFound: !!code
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Force deactivate error:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -1040,6 +1127,223 @@ router.put("/services/:id/restore", auth, async (req, res) => {
   } catch (error) {
     console.error("Restore service error:", error);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ===== GET ALL APPOINTMENTS (Admin) =====
+router.get("/appointments", auth, async (req, res) => {
+  try {
+    console.log("🔍 Admin fetching all appointments");
+    
+    // Check if user is admin
+    if (req.userRole !== "Admin") {
+      return res.status(403).json({ message: "Only admins can access all appointments" });
+    }
+    
+    // Get all appointments (including soft deleted ones for admin view)
+    const appointments = await Appointment.find({})
+      .populate('user_id', 'name email phone')
+      .sort({ createdAt: -1 })
+      .lean();
+    
+    console.log("🔍 Total appointments found:", appointments.length);
+    
+    // Format appointments for frontend
+    const formattedAppointments = await Promise.all(appointments.map(async (appt) => {
+      // Find attorney info
+      let attorneyInfo = {
+        name: appt.attorneyName || 'Unknown Attorney',
+        specialization: appt.attorneySpecialization || 'N/A',
+        email: '',
+        phone: ''
+      };
+      
+      // Try to find attorney by attorney_id
+      if (appt.attorney_id) {
+        const attorney = await Attorney.findById(appt.attorney_id).lean();
+        if (attorney) {
+          attorneyInfo = {
+            name: attorney.attorneyName || appt.attorneyName || 'Unknown Attorney',
+            specialization: attorney.specialization || appt.attorneySpecialization || 'N/A',
+            email: attorney.attorneyEmail || '',
+            phone: attorney.attorneyPhone || ''
+          };
+        }
+      }
+      
+      return {
+        id: appt._id,
+        date: appt.date ? new Date(appt.date).toISOString().split('T')[0] : '',
+        time: appt.time || '',
+        status: appt.status || 'Pending',
+        isActive: appt.isActive !== false,
+        patient: {
+          name: appt.personalInfo?.name || appt.user_id?.name || 'Unknown Client',
+          email: appt.personalInfo?.email || appt.user_id?.email || '',
+          phone: appt.personalInfo?.phone || appt.user_id?.phone || ''
+        },
+        doctor: attorneyInfo,
+        subject: appt.subject || '',
+        purpose: appt.purpose || '',
+        caseSummary: appt.caseSummary || '',
+        documents: appt.documents || '',
+        desiredOutcome: appt.desiredOutcome || '',
+        attorneyFees: appt.attorneyFees || 0,
+        createdAt: appt.createdAt
+      };
+    }));
+    
+    res.json({
+      appointments: formattedAppointments,
+      total: formattedAppointments.length
+    });
+  } catch (error) {
+    console.error("❌ Error fetching appointments:", error);
+    res.status(500).json({ message: "Failed to fetch appointments" });
+  }
+});
+
+// ===== UPDATE APPOINTMENT STATUS (Admin) =====
+router.put("/appointments/:appointmentId/status", auth, async (req, res) => {
+  try {
+    console.log("🔍 Admin updating appointment status");
+    
+    // Check if user is admin
+    if (req.userRole !== "Admin") {
+      return res.status(403).json({ message: "Only admins can update appointments" });
+    }
+    
+    const { appointmentId } = req.params;
+    const { status } = req.body;
+    
+    if (!status) {
+      return res.status(400).json({ message: "Status is required" });
+    }
+    
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    
+    appointment.status = status;
+    await appointment.save();
+    
+    console.log("✅ Appointment status updated by admin:", appointmentId, "->", status);
+    
+    res.json({
+      message: "Appointment status updated successfully",
+      appointment: {
+        id: appointment._id,
+        status: appointment.status
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error updating appointment status:", error);
+    res.status(500).json({ message: "Failed to update appointment status" });
+  }
+});
+
+// ===== DELETE APPOINTMENT (Admin) =====
+router.delete("/appointments/:appointmentId", auth, async (req, res) => {
+  try {
+    console.log("🔍 Admin deleting appointment");
+    
+    // Check if user is admin
+    if (req.userRole !== "Admin") {
+      return res.status(403).json({ message: "Only admins can delete appointments" });
+    }
+    
+    const { appointmentId } = req.params;
+    
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    
+    // Soft delete
+    appointment.isActive = false;
+    appointment.deletedAt = new Date();
+    appointment.deletionReason = "Deleted by admin";
+    await appointment.save();
+    
+    console.log("✅ Appointment soft deleted by admin:", appointmentId);
+    
+    res.json({ message: "Appointment deleted successfully" });
+  } catch (error) {
+    console.error("❌ Error deleting appointment:", error);
+    res.status(500).json({ message: "Failed to delete appointment" });
+  }
+});
+
+// ===== GET ALL DOCTORS/ATTORNEYS (Admin) =====
+router.get("/doctors", auth, async (req, res) => {
+  try {
+    console.log("🔍 Admin fetching all attorneys");
+    
+    // Check if user is admin
+    if (req.userRole !== "Admin") {
+      return res.status(403).json({ message: "Only admins can access this endpoint" });
+    }
+    
+    const attorneys = await Attorney.find({ isActive: true })
+      .select('attorneyName attorneyEmail attorneyPhone specialization fees')
+      .lean();
+    
+    const formattedAttorneys = attorneys.map(attorney => ({
+      id: attorney._id,
+      name: attorney.attorneyName,
+      email: attorney.attorneyEmail,
+      phone: attorney.attorneyPhone,
+      specialization: attorney.specialization,
+      fees: attorney.fees
+    }));
+    
+    res.json({
+      doctors: formattedAttorneys,
+      total: formattedAttorneys.length
+    });
+  } catch (error) {
+    console.error("❌ Error fetching attorneys:", error);
+    res.status(500).json({ message: "Failed to fetch attorneys" });
+  }
+});
+
+// ===== MARK EXPIRED APPOINTMENTS =====
+router.post("/mark-expired", auth, async (req, res) => {
+  try {
+    console.log("🔍 Admin marking expired appointments");
+    
+    // Check if user is admin
+    if (req.userRole !== "Admin") {
+      return res.status(403).json({ message: "Only admins can access this endpoint" });
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Find appointments with past dates that are still Pending or Confirmed
+    const expiredAppointments = await Appointment.find({
+      date: { $lt: today },
+      status: { $in: ["Pending", "Confirmed"] }
+    });
+    
+    // Update them to Expired
+    let updatedCount = 0;
+    for (const appt of expiredAppointments) {
+      appt.status = "Expired";
+      await appt.save();
+      updatedCount++;
+    }
+    
+    console.log(`✅ Marked ${updatedCount} appointments as expired`);
+    
+    res.json({
+      message: `${updatedCount} appointments marked as expired`,
+      count: updatedCount
+    });
+  } catch (error) {
+    console.error("❌ Error marking expired appointments:", error);
+    res.status(500).json({ message: "Failed to mark expired appointments" });
   }
 });
 

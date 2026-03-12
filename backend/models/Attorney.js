@@ -130,8 +130,8 @@ const attorneySchema = new mongoose.Schema({
   // Admin fields
   attorneyCode: {
     type: String,
-    required: false,
-    default: null
+    required: false,  // Changed to false - will be auto-generated
+    unique: true
   },
   joiningDate: {
     type: String,
@@ -152,6 +152,17 @@ attorneySchema.pre("save", async function (next) {
   const salt = await bcrypt.genSalt(10);
   this.attorneyPassword = await bcrypt.hash(this.attorneyPassword, salt);
   console.log("🔍 Hashed password length:", this.attorneyPassword.length);
+  next();
+});
+
+// Pre-save hook to generate attorneyCode if not provided
+attorneySchema.pre("save", function (next) {
+  if (this.isNew && !this.attorneyCode) {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substr(2, 5);
+    this.attorneyCode = `ATT${timestamp}${random}`.toUpperCase();
+    console.log("🔍 Generated attorneyCode:", this.attorneyCode);
+  }
   next();
 });
 

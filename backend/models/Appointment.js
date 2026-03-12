@@ -3,7 +3,6 @@ const mongoose = require('mongoose');
 const appointmentSchema = new mongoose.Schema({
   user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   attorney_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Attorney', required: true },
-  doctor_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Attorney', required: true }, // For backward compatibility
   date: { type: Date, required: true },
   time: { type: String, required: true },
   // New consultation fields

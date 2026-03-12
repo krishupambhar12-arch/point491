@@ -40,10 +40,44 @@ router.get("/test", (req, res) => {
 });
 
 // ===== USER REGISTRATION =====
-router.post("/register", async (req, res) => {
+router.post("/register", upload.single('profilePicture'), async (req, res) => {
   try {
     console.log("🔍 Registration attempt started");
-    const { name, email, password, role, phone, address, dateOfBirth, gender } = req.body;
+    console.log("🔍 Request body:", req.body);
+    console.log("🔍 Request file:", req.file);
+    
+    // Extract data from FormData
+    const { 
+      name, 
+      email, 
+      password, 
+      role, 
+      phone, 
+      address, 
+      dateOfBirth, 
+      gender,
+      specialization,
+      qualification,
+      experience,
+      consultationFees,
+      barNumber,
+      licenseNumber,
+      education,
+      university,
+      bio,
+      officeAddress,
+      city,
+      state,
+      zipCode,
+      website,
+      linkedin,
+      languages,
+      practiceAreas,
+      availableDays,
+      availableTimeStart,
+      availableTimeEnd,
+      attorneyCode
+    } = req.body;
 
     console.log("🔍 Registration data:", { name, email, role, phone, address, dateOfBirth, gender });
 
@@ -83,32 +117,36 @@ router.post("/register", async (req, res) => {
         attorneyDOB: dateOfBirth || null,
         
         // Professional Information
-        specialization: req.body.specialization || "",
-        qualification: req.body.qualification || "",
-        experience: req.body.experience || 0,
-        consultationFees: req.body.consultationFees || 0,
-        barNumber: req.body.barNumber || "",
-        licenseNumber: req.body.licenseNumber || "",
-        education: req.body.education || "",
-        university: req.body.university || "",
-        bio: req.body.bio || "",
+        specialization: specialization || "",
+        qualification: qualification || "",
+        experience: experience || 0,
+        consultationFees: consultationFees || 0,
+        barNumber: barNumber || "",
+        licenseNumber: licenseNumber || "",
+        education: education || "",
+        university: university || "",
+        bio: bio || "",
         
         // Contact Information
-        officeAddress: req.body.officeAddress || "",
-        city: req.body.city || "",
-        state: req.body.state || "",
-        zipCode: req.body.zipCode || "",
-        website: req.body.website || "",
-        linkedin: req.body.linkedin || "",
+        officeAddress: officeAddress || "",
+        city: city || "",
+        state: state || "",
+        zipCode: zipCode || "",
+        website: website || "",
+        linkedin: linkedin || "",
         
         // Practice Information
-        languages: req.body.languages || "",
-        practiceAreas: req.body.practiceAreas || "",
-        availableDays: req.body.availableDays || "",
-        availableTimeStart: req.body.availableTimeStart || "09:00",
-        availableTimeEnd: req.body.availableTimeEnd || "17:00",
+        languages: languages || "",
+        practiceAreas: practiceAreas || "",
+        availableDays: availableDays || "",
+        availableTimeStart: availableTimeStart || "09:00",
+        availableTimeEnd: availableTimeEnd || "17:00",
         
-        profilePicture: req.file ? req.file.filename : null
+        // Admin fields
+        attorneyCode: attorneyCode || "",
+        
+        // Profile picture
+        profilePicture: req.file ? req.file.path : null
       });
 
       await attorney.save();
@@ -187,57 +225,6 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     console.log("🔍 Login data:", { email, passwordLength: password?.length });
-
-    // Validate input
-    if (!email || !password) {
-      console.log("❌ Missing email or password");
-      return res.status(400).json({ message: "Email and password are required" });
-    }
-
-    // Check if attorney first
-    const attorney = await Attorney.findOne({ attorneyEmail: email });
-    console.log("🔍 Attorney lookup:", { email, found: !!attorney });
-    
-    if (attorney) {
-      console.log("🔍 Attorney login attempt detected");
-      
-      // Check if attorney is active (not deleted)
-      if (!attorney.isActive) {
-        console.log("❌ Attorney account is deactivated:", email);
-        return res.status(401).json({ message: "Your account has been deactivated by admin. Please contact admin." });
-      }
-      
-      console.log("🔍 Comparing passwords for attorney:", attorney.attorneyEmail);
-      // Check password
-      const isMatch = await bcrypt.compare(password, attorney.attorneyPassword);
-      console.log("🔍 Password match result:", isMatch);
-      
-      if (!isMatch) {
-        console.log("❌ Password mismatch for attorney:", attorney.attorneyEmail);
-        return res.status(400).json({ message: "Invalid credentials" });
-      }
-
-      console.log("✅ Attorney login successful:", attorney.attorneyEmail);
-      // Generate token
-      const token = generateToken(attorney._id, "Attorney");
-
-      return res.json({
-        message: "Attorney login successful",
-        token,
-        attorney: {
-          id: attorney._id,
-          attorneyName: attorney.attorneyName,
-          attorneyEmail: attorney.attorneyEmail,
-          role: "Attorney"
-        },
-      });
-    } else {
-      // Attorney not found in database
-      console.log("❌ Attorney not found in database");
-      return res.status(401).json({ 
-        message: "Attorney account not found. Please contact admin to create your account." 
-      });
-    }
 
     // If not attorney, check regular user
     console.log("🔍 Regular user login attempt");
@@ -401,7 +388,7 @@ router.get("/dashboard", auth, async (req, res) => {
     }
 
     // Get user's appointments
-    const appointments = await Appointment.find({ userId })
+    const appointments = await Appointment.find({ user_id: userId }) 
       .sort({ date: -1 })
       .limit(5);
 
@@ -447,9 +434,10 @@ router.get("/dashboard", auth, async (req, res) => {
 router.get("/appointments", auth, async (req, res) => {
   try {
     const userId = req.userId;
-    
-    const appointments = await Appointment.find({ userId })
-      .sort({ date: -1 });
+    console.log("🔍 Appointments request for user:", userId);
+    const appointments = await Appointment.find({ user_id: userId });
+
+    console.log("🔍 Appointments found:", appointments.length);
 
     res.json({
       appointments: appointments.map(apt => ({

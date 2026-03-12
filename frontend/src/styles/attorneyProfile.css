@@ -1,32 +1,412 @@
-/* Attorney Profile Styles */
-.attorney-profile-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin: 20px 0;
+/* Attorney Profile Page Styles - Using Shared Sidebar */
+.attorney-profile-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+}
+
+.attorney-profile-content {
+  flex: 1;
+  padding: 20px;
+  margin-left: 270px;
+}
+
+.content-header {
+  background-color: #7b638d;
+  padding: 20px 30px;
+  border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--color-medium);
-}
-
-.attorney-profile-card h2 {
-  color: var(--color-darkest);
   margin-bottom: 20px;
-  font-size: 1.5rem;
+  text-align: center;
+}
+
+.content-header h1 {
+  margin: 0;
+  font-size: 24px;
+  color: white;
   font-weight: 600;
-  border-bottom: 2px solid var(--color-medium);
-  padding-bottom: 8px;
 }
 
-.profile-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
+.profile-content-wrapper {
+  padding: 0;
 }
 
-.profile-item {
+/* Profile Header Section */
+.profile-header-section {
+  background: #7b638d;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 5px;
+  position: relative;
+  min-height: 120px;
+}
+
+.profile-header-top {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  margin-bottom: 0;
+}
+
+.menu-container {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.menu-button {
+  background: none;
+  min-width: 40px;
+  min-height: 40px;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.menu-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 180px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: #2c3e50;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+  position: relative;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item.label-as-button {
+  cursor: pointer;
+  user-select: none;
+}
+
+.file-input-hidden {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.profile-title {
+  margin: 0;
+  font-size: 16px;
+  color: white;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.profile-picture-and-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  width: 100%;
+  position: relative;
+  flex: 1;
+}
+
+.profile-picture-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-top: -50px;
+}
+
+.profile-picture-circle {
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  position: relative;
+}
+
+.profile-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.no-photo-text {
+  color: #6c757d;
+  font-size: 12px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.upload-section {
+  margin-top: 10px;
+}
+
+.file-input {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.profile-info-container {
+  text-align: center;
+  margin-top: -30px;
+}
+
+.profile-name {
+  margin: 0;
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.profile-specialization {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  margin: 8px 0 10px 0;
+}
+
+.action-buttons {
+  margin-bottom: 20px;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+.btn-primary:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.btn-secondary:hover {
+  background-color: #545b62;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: white;
+  text-decoration: underline;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 5px 0;
+}
+
+.btn-link:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.message-text {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  font-size: 14px;
+}
+
+/* Information Cards Wrapper */
+.info-cards-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Custom Info Cards */
+.info-card-custom {
+  background: #7b638d;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.card-header-custom {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 15px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.card-header-custom h3 {
+  margin: 0;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.card-body-custom {
+  padding: 20px;
+}
+
+.info-row-custom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-row-custom:last-child {
+  border-bottom: none;
+}
+
+.label-custom {
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  min-width: 180px;
+}
+
+.value-custom {
+  color: white;
+  font-size: 14px;
+  flex: 1;
+  text-align: right;
+}
+
+.input-custom {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: right;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.input-custom:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.input-custom::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .attorney-profile-page {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    order: 2;
+  }
+
+  .main-content {
+    order: 1;
+  }
+
+  .profile-header-section {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .info-cards-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .info-row-custom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .label-custom {
+    min-width: auto;
+  }
+
+  .input-custom {
+    text-align: left;
+    width: 100%;
+  }
+
+  .value-custom {
+    text-align: left;
+  }
 }
 
 .profile-item.full-width {
@@ -69,12 +449,12 @@
   .profile-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .attorney-profile-card {
     padding: 16px;
     margin: 16px 0;
   }
-  
+
   .profile-image {
     width: 120px;
     height: 120px;
@@ -104,6 +484,7 @@
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }

@@ -51,11 +51,12 @@
 }
 
 .doctor-image img {
-  width: 100%;
-  height: 100%;
+  width: 121px;
+  height: 136px;
+  border-radius: 50%;
   object-fit: cover;
+  /* border: 3px solid var(--color-regular-purple); */
 }
-
 .doctor-details {
   text-align: center;
 }
@@ -270,11 +271,12 @@
 }
 
 .doctor-image img {
-  width: 120px;
-  height: 120px;
+  width: 121px;
+  height: 136px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--color-regular-purple);
+  /* border: 3px solid var(--color-regular-purple); */
+  margin: -11px;
 }
 
 .doctor-details h3 {

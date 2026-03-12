@@ -43,6 +43,9 @@ const AttorneyRegister = () => {
     availableTimeStart: "09:00",
     availableTimeEnd: "17:00",
     
+    // Attorney Code
+    attorneyCode: "",
+    
     // Profile Picture
     profilePicture: null
   });
@@ -277,6 +280,34 @@ const AttorneyRegister = () => {
               </button>
             </div>
             {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="phone">Phone Number *</label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Enter your phone number"
+              required
+            />
+            {errors.phone && <span className="error-message">{errors.phone}</span>}
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="attorneyCode">Attorney Code *</label>
+            <input
+              type="text"
+              id="attorneyCode"
+              name="attorneyCode"
+              value={formData.attorneyCode}
+              onChange={handleChange}
+              placeholder="Enter your attorney code"
+              required
+            />
+            {errors.attorneyCode && <span className="error-message">{errors.attorneyCode}</span>}
           </div>
           
           <div className="form-group">

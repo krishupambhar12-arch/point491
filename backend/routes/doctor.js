@@ -1,15 +1,17 @@
 // back-end/routes/doctor.js (attorney routes; mounted at /attorney)
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const auth = require("../middleware/auth");
 const Attorney = require("../models/Attorney");
 const User = require("../models/User");
-const multer = require("multer");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 const jwt = require("jsonwebtoken");
 const Consultation = require("../models/Consultation");
 const ConsultationMessage = require("../models/ConsultationMessage");
 const Appointment = require("../models/Appointment");
+const multer = require("multer");
 
 // ===== Multer setup for file upload =====
 const storage = multer.diskStorage({
@@ -250,144 +252,17 @@ router.post("/login", async (req, res) => {
     
     res.status(500).json({ 
       message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
-    
-    await attorney.save();
-    console.log("✅ Attorney record created from User data");
-    
-    // Remove from User model to avoid duplicates
-    await User.deleteOne({ _id: userAttorney._id });
-    console.log("🔍 Removed duplicate from User model");
   }
-}
-  
-if (!attorney) {
-  console.log("❌ Attorney not found for email:", email);
-  return res.status(404).json({ message: "Attorney not found" });
-}
-
-console.log("🔍 Attorney ID:", attorney._id);
-console.log("🔍 Attorney email:", attorney.attorneyEmail);
-console.log("🔍 Attorney has password:", !!attorney.attorneyPassword);
-
-// Check password - Attorney model has comparePassword method
-if (!attorney.attorneyPassword) {
-  console.log("❌ Attorney has no password set");
-  return res.status(500).json({ message: "Attorney account not properly configured" });
-}
-
-console.log("🔍 Attempting password comparison...");
-const isMatch = await attorney.comparePassword(password);
-console.log("🔍 Password match:", isMatch ? "Yes" : "No");
-  
-if (!isMatch) {
-  console.log("❌ Invalid password for email:", email);
-  return res.status(401).json({ message: "Invalid credentials" });
-}
-
-// Generate JWT token
-const token = jwt.sign(
-  { id: attorney._id, role: "Attorney" },
-  process.env.JWT_SECRET || "secretKey",
-  { expiresIn: "24h" }
-);
-
-console.log("✅ Attorney login successful for:", email);
-
-console.log("🔍 Generated token payload:", {
-  id: attorney._id,
-  role: "Attorney"
-});
-
-res.status(200).json({
-  message: "Login successful",
-  token,
-  attorney: {
-    id: attorney._id,
-    name: attorney.attorneyName,
-    email: attorney.attorneyEmail
-  }
-});
-} catch (error) {
-console.error("❌ Attorney login error:", error);
-console.error("❌ Error type:", error.constructor.name);
-console.error("❌ Error message:", error.message);
-console.error("❌ Error stack:", error.stack);
-  
-// Send specific error messages based on error type
-let errorMessage = "Server error";
-if (error.message.includes("bcrypt")) {
-  errorMessage = "Password verification failed";
-} else if (error.message.includes("Cast to ObjectId failed")) {
-  errorMessage = "Invalid attorney ID format";
-} else if (error.message.includes("ENOTFOUND") || error.message.includes("ECONNREFUSED")) {
-  errorMessage = "Database connection error";
-}
-  
-res.status(500).json({ 
-  message: errorMessage,
-  error: process.env.NODE_ENV === 'development' ? error.message : undefined
-});
-}
-});
-
-// ===== GET Attorney Profile =====
-// GET /attorney/profile  -> Get logged-in attorney's profile data
-router.get("/profile", auth, async (req, res) => {
-try {
-  console.log("🔍 Profile request - userId:", req.userId);
-  console.log("🔍 Profile request - userRole:", req.userRole);
-  
-  // Find attorney by userId
-  const attorney = await Attorney.findById(req.userId).lean();
-  console.log("🔍 Attorney found:", attorney ? "Yes" : "No");
-  console.log("🔍 Attorney data:", attorney);
-  
-  if (!attorney) {
-    console.log("❌ Attorney not found for ID:", req.userId);
-    return res.status(404).json({ message: "Attorney profile not found" });
-  }
-
-  // Check if attorney is still active
-  if (!attorney.isActive) {
-    return res.status(403).json({ message: "Attorney account is not active" });
-  }
-
-  // Return attorney profile data
-  res.json({
-    id: attorney._id,
-    name: attorney.attorneyName,
-    email: attorney.attorneyEmail,
-    phone: attorney.attorneyPhone,
-    gender: attorney.attorneyGender,
-    specialization: attorney.specialization,
-    qualification: attorney.qualification,
-    experience: attorney.experience,
-    fees: attorney.fees,
-    profilePicture: attorney.profilePicture ? `uploads/${attorney.profilePicture}` : null,
-    attorneyCode: attorney.attorneyCode,
-    joiningDate: attorney.joiningDate,
-    created_at: attorney.created_at,
-    rating: attorney.rating || 4.5,
-    available: attorney.available !== false
-  });
-} catch (error) {
-  console.error("Get attorney profile error:", error);
-  res.status(500).json({ message: "Server error" });
-}
 });
 
 // ===== POST Attorney Details =====
 router.post("/details", upload.single("profile_pic"), async (req, res) => {
-try {
-  const { 
-    attorneyId,
-    attorneyName,
-    specialization, 
-    qualification, 
-    experience, 
-    fees
-  } = req.body;
+  try {
+    const { 
+      attorneyId,
+      attorneyName,
       specialization, 
       qualification, 
       experience, 
@@ -459,67 +334,102 @@ try {
 // ===== UPDATE Attorney Profile =====
 // PUT /attorney/profile  (auth required)
 // Accepts multipart/form-data for optional profile_pic
-router.put("/profile", auth, upload.single("profile_pic"), async (req, res) => {
-  try {
-    const {
-      attorneyName,
-      attorneyEmail,
-      attorneyPhone,
-      attorneyGender,
-      attorneyAddress,
-      attorneyDOB,
-      specialization,
-      qualification,
-      experience,
-      fees
-    } = req.body;
-
-    // Find attorney by ID (from auth middleware)
-    const attorney = await Attorney.findById(req.userId);
-    if (!attorney) {
-      return res.status(404).json({ message: "Attorney not found" });
+router.put("/profile", auth, (req, res) => {
+  // Use multer only if file is being uploaded
+  upload.single("profile_pic")(req, res, async (err) => {
+    if (err) {
+      console.error("Multer error:", err);
+      return res.status(400).json({ message: "File upload error" });
     }
 
-    // Update fields - only update if value is provided and not empty
-    if (attorneyName && attorneyName.trim()) attorney.attorneyName = attorneyName.trim();
-    if (attorneyEmail && attorneyEmail.trim()) attorney.attorneyEmail = attorneyEmail.trim();
-    if (attorneyPhone && attorneyPhone.trim()) attorney.attorneyPhone = attorneyPhone.trim();
-    if (attorneyGender && attorneyGender.trim()) attorney.attorneyGender = attorneyGender.trim();
-    if (attorneyAddress && attorneyAddress.trim()) attorney.attorneyAddress = attorneyAddress.trim();
-    if (attorneyDOB && attorneyDOB.trim()) attorney.attorneyDOB = attorneyDOB.trim();
-    if (specialization && specialization.trim()) attorney.specialization = specialization.trim();
-    if (qualification && qualification.trim()) attorney.qualification = qualification.trim();
-    if (experience !== undefined && experience !== "") attorney.experience = parseInt(experience) || 0;
-    if (fees !== undefined && fees !== "") attorney.fees = parseFloat(fees) || 0;
-    if (req.file) {
-    console.log("🔍 Profile picture uploaded:", req.file.filename);
-    console.log("🔍 Full file path:", req.file.path);
-    attorney.profilePicture = req.file.filename;
-  }
+    try {
+      const {
+        attorneyName,
+        attorneyEmail,
+        attorneyPhone,
+        attorneyGender,
+        attorneyAddress,
+        attorneyDOB,
+        specialization,
+        qualification,
+        experience,
+        fees,
+        removeProfilePic
+      } = req.body;
 
-    await attorney.save();
+      console.log("🔍 Request body:", req.body);
+      console.log("🔍 removeProfilePic:", removeProfilePic);
 
-    res.json({
-      message: "Profile updated successfully",
-      attorney: {
-        id: attorney._id,
-        attorneyName: attorney.attorneyName,
-        attorneyEmail: attorney.attorneyEmail,
-        attorneyPhone: attorney.attorneyPhone,
-        attorneyGender: attorney.attorneyGender,
-        attorneyAddress: attorney.attorneyAddress,
-        attorneyDOB: attorney.attorneyDOB,
-        specialization: attorney.specialization,
-        qualification: attorney.qualification,
-        experience: attorney.experience,
-        fees: attorney.fees,
-        profilePicture: attorney.profilePicture ? `uploads/${attorney.profilePicture}` : null
+      // Find attorney by ID (from auth middleware)
+      const attorney = await Attorney.findById(req.userId);
+      if (!attorney) {
+        return res.status(404).json({ message: "Attorney not found" });
       }
-    });
-  } catch (e) {
-    console.error("Update profile error:", e);
-    res.status(500).json({ message: "Server error" });
-  }
+
+      // Update fields - only update if value is provided and not empty
+      if (attorneyName && attorneyName.trim()) attorney.attorneyName = attorneyName.trim();
+      if (attorneyEmail && attorneyEmail.trim()) attorney.attorneyEmail = attorneyEmail.trim();
+      if (attorneyPhone && attorneyPhone.trim()) attorney.attorneyPhone = attorneyPhone.trim();
+      if (attorneyGender && attorneyGender.trim()) attorney.attorneyGender = attorneyGender.trim();
+      if (attorneyAddress && attorneyAddress.trim()) attorney.attorneyAddress = attorneyAddress.trim();
+      if (attorneyDOB && attorneyDOB.trim()) attorney.attorneyDOB = attorneyDOB.trim();
+      if (specialization && specialization.trim()) attorney.specialization = specialization.trim();
+      if (qualification && qualification.trim()) attorney.qualification = qualification.trim();
+      if (experience !== undefined && experience !== "") attorney.experience = parseInt(experience) || 0;
+      if (fees !== undefined && fees !== "") attorney.fees = parseFloat(fees) || 0;
+      
+      // Handle profile picture removal
+      if (removeProfilePic === "true") {
+        console.log("🔍 Removing profile picture - setting to null");
+        
+        // Delete the actual file from server if it exists
+        if (attorney.profilePicture) {
+          const oldFilePath = path.join(process.cwd(), 'uploads', attorney.profilePicture);
+          console.log("🔍 Attempting to delete file:", oldFilePath);
+          
+          fs.unlink(oldFilePath, (err) => {
+            if (err) {
+              console.error("🔍 Error deleting file:", err);
+            } else {
+              console.log("🔍 File deleted successfully:", oldFilePath);
+            }
+          });
+        }
+        
+        attorney.profilePicture = null;
+      }
+      
+      // Handle new profile picture upload
+      if (req.file) {
+        console.log("🔍 Profile picture uploaded:", req.file.filename);
+        console.log("🔍 Full file path:", req.file.path);
+        attorney.profilePicture = req.file.filename;
+      }
+
+      await attorney.save();
+
+      res.json({
+        message: "Profile updated successfully",
+        attorney: {
+          id: attorney._id,
+          attorneyName: attorney.attorneyName,
+          attorneyEmail: attorney.attorneyEmail,
+          attorneyPhone: attorney.attorneyPhone,
+          attorneyGender: attorney.attorneyGender,
+          attorneyAddress: attorney.attorneyAddress,
+          attorneyDOB: attorney.attorneyDOB,
+          specialization: attorney.specialization,
+          qualification: attorney.qualification,
+          experience: attorney.experience,
+          fees: attorney.fees,
+          profilePicture: attorney.profilePicture ? `uploads/${attorney.profilePicture}` : null
+        }
+      });
+    } catch (e) {
+      console.error("Update profile error:", e);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
 });
 
 // GET /attorney/dashboard  -> Attorney + today's appointments count
@@ -559,25 +469,27 @@ router.get("/dashboard", auth, async (req, res) => {
 
     // today count
     todayCount = await Appointment.countDocuments({
-      doctor_id: attorney._id,
+      $or: [{ attorney_id: attorney._id }, { doctor_id: attorney._id }],
       date: { $gte: start, $lte: end },
       status: { $ne: "Cancelled" }
     });
 
     // total unique clients seen by this attorney
-    const uniqueClients = await Appointment.distinct("user_id", { doctor_id: attorney._id });
+    const uniqueClients = await Appointment.distinct("user_id", {
+      $or: [{ attorney_id: attorney._id }, { doctor_id: attorney._id }]
+    });
     totalClients = uniqueClients.length;
 
     // upcoming appointments from now (status pending/confirmed)
     upcomingAppointments = await Appointment.countDocuments({
-      doctor_id: attorney._id,
+      $or: [{ attorney_id: attorney._id }, { doctor_id: attorney._id }],
       date: { $gte: new Date() },
       status: { $in: ["Pending", "Confirmed"] }
     });
 
     // simple earnings estimate = total completed appointments * fees
     const completedCount = await Appointment.countDocuments({
-      doctor_id: attorney._id,
+      $or: [{ attorney_id: attorney._id }, { doctor_id: attorney._id }],
       status: { $in: ["Completed", "Done", "Approved"] }
     });
     earnings = completedCount * (attorney.fees || 0);
@@ -637,15 +549,57 @@ router.get("/dashboard", auth, async (req, res) => {
 // GET /attorney/appointments  -> All appointments for this attorney
 router.get("/appointments", auth, async (req, res) => {
   try {
+    const attorneyId = req.userId;
+    console.log("🔍 Appointments request for attorney:", attorneyId);
+    console.log("🔍 User role:", req.userRole);
+    
+    // Convert to ObjectId for proper matching
+    const attorneyObjectId = new mongoose.Types.ObjectId(attorneyId);
+    console.log("🔍 Converted to ObjectId:", attorneyObjectId);
+    
     // Find attorney profile
-    const attorney = await Attorney.findById(req.userId).lean();
-    if (!attorney) return res.status(404).json({ message: "Attorney profile not found" });
+    let attorney = await Attorney.findById(attorneyId).lean();
+    console.log("🔍 Attorney found in Attorney model:", attorney ? attorney.attorneyName : 'NOT FOUND');
+    
+    // If not found in Attorney model, check User model (for migrated attorneys)
+    if (!attorney) {
+      console.log("🔍 Checking User model for attorney...");
+      const userAttorney = await User.findById(attorneyId).lean();
+      if (userAttorney && userAttorney.role === 'Attorney') {
+        console.log("🔍 Attorney found in User model:", userAttorney.name);
+        attorney = userAttorney;
+      }
+    }
+    
+    if (!attorney) {
+      console.log("❌ Attorney profile not found for ID:", attorneyId);
+      return res.status(404).json({ message: "Attorney profile not found" });
+    }
 
     // Get all appointments for this attorney
-    const appointments = await Appointment.find({ doctor_id: attorney._id })
+    // Query by attorney_id (Attorney model) and also check Code model ID
+    console.log("🔍 Querying appointments for attorney:", attorneyId);
+    
+    // Build list of IDs to search
+    const idsToSearch = [attorneyObjectId];
+    
+    // Also check if this attorney has a Code model record and include that ID
+    const Code = require("../models/Code");
+    const codeRecord = await Code.findOne({ email: attorney.attorneyEmail }).lean();
+    if (codeRecord) {
+      console.log("🔍 Found Code record for attorney:", codeRecord._id);
+      idsToSearch.push(new mongoose.Types.ObjectId(codeRecord._id));
+    }
+    
+    console.log("🔍 Searching for appointments with IDs:", idsToSearch.map(id => id.toString()));
+    
+    const appointments = await Appointment.find({
+      attorney_id: { $in: idsToSearch }
+    })
       .populate('user_id', 'name email phone')
-      .sort({ date: 1, time: 1 })
       .lean();
+    
+    console.log("🔍 Appointments found:", appointments.length);
 
     // Format appointments for frontend
     const formattedAppointments = appointments.map(appt => ({
@@ -707,8 +661,10 @@ router.get("/all", async (req, res) => {
       
       if (attorneyRecord) {
         // Attorney has signed up, include them in public listing
+        // IMPORTANT: Use Attorney model's _id for booking, not Code model's _id
         signedUpAttorneys.push({
-          id: codeAttorney._id,
+          id: attorneyRecord._id, // Use Attorney model ID for booking
+          codeId: codeAttorney._id, // Keep Code ID for reference
           name: codeAttorney.name || "Attorney Unknown",
           email: codeAttorney.email || "",
           phone: codeAttorney.phone || "",
@@ -764,8 +720,8 @@ router.post("/book-appointment", auth, async (req, res) => {
     }
 
     const { 
-      doctor_id, 
       date, 
+      attorney_id, 
       time, 
       subject,
       personalInfo,
@@ -779,45 +735,54 @@ router.post("/book-appointment", auth, async (req, res) => {
     } = req.body;
 
     console.log("🔍 Appointment data:", {
-      doctor_id,
       date,
       time,
+      attorney_id,
       subject,
       attorneyName,
       attorneySpecialization,
       attorneyFees
     });
 
-    if (!doctor_id || !date || !time || !subject || !personalInfo || !purpose || !caseSummary || !desiredOutcome) {
+    if (!attorney_id || !date || !time || !subject || !personalInfo || !purpose || !caseSummary || !desiredOutcome) {
       console.log("❌ Missing required fields");
       return res.status(400).json({ message: "All required fields must be filled" });
     }
 
     // Check if attorney exists in Attorney model first
-    let attorney = await Attorney.findById(doctor_id);
+    let attorney = await Attorney.findById(attorney_id);
+    let actualAttorneyId = attorney_id; // Will be used to store in appointment
     
     // If not found in Attorney model, check Code model
     if (!attorney) {
       console.log("🔍 Attorney not found in Attorney model, checking Code model...");
       const Code = require("../models/Code");
-      const codeAttorney = await Code.findById(doctor_id);
+      const codeAttorney = await Code.findById(attorney_id);
       
       if (codeAttorney) {
         console.log("✅ Attorney found in Code model:", codeAttorney.name);
-        // Create a temporary attorney object for booking
-        attorney = {
-          _id: codeAttorney._id,
-          attorneyName: codeAttorney.name,
-          attorneyEmail: codeAttorney.email,
-          attorneyPhone: codeAttorney.phone || "",
-          specialization: codeAttorney.qualification || "General Practice",
-          fees: 100 // Default fees since Code model doesn't have fees field
-        };
+        // Find the actual Attorney record with this email
+        const actualAttorney = await Attorney.findOne({ attorneyEmail: codeAttorney.email });
+        if (actualAttorney) {
+          console.log("✅ Found actual Attorney record:", actualAttorney.attorneyName);
+          actualAttorneyId = actualAttorney._id; // Use the Attorney model's ID
+          attorney = actualAttorney;
+        } else {
+          // Create a temporary attorney object for booking (shouldn't happen normally)
+          attorney = {
+            _id: codeAttorney._id,
+            attorneyName: codeAttorney.name,
+            attorneyEmail: codeAttorney.email,
+            attorneyPhone: codeAttorney.phone || "",
+            specialization: codeAttorney.qualification || "General Practice",
+            fees: 100
+          };
+        }
       }
     }
 
     if (!attorney) {
-      console.log("❌ Attorney not found in any model:", doctor_id);
+      console.log("❌ Attorney not found in any model:", attorney_id);
       return res.status(404).json({ message: "Attorney not found" });
     }
 
@@ -826,14 +791,14 @@ router.post("/book-appointment", auth, async (req, res) => {
     // Check if user is trying to book appointment with themselves (if they are an attorney)
     if (req.userRole === "Attorney") {
       const userAttorney = await Attorney.findById(req.userId);
-      if (userAttorney && userAttorney._id.toString() === doctor_id) {
+      if (userAttorney && userAttorney._id.toString() === attorney_id) {
         return res.status(400).json({ message: "Attorneys cannot book appointments with themselves" });
       }
     }
 
     // Check if appointment already exists for this time slot
     const existingAppointment = await Appointment.findOne({
-      doctor_id,
+      attorney_id: actualAttorneyId,
       date,
       time,
       status: { $in: ["Pending", "Upcoming"] }
@@ -847,8 +812,7 @@ router.post("/book-appointment", auth, async (req, res) => {
     // Create new appointment
     const appointment = new Appointment({
       user_id: req.userId,
-      attorney_id: doctor_id, // Add attorney_id field
-      doctor_id,
+      attorney_id: actualAttorneyId, // Use the Attorney model's ID
       date,
       time,
       subject,
@@ -866,8 +830,7 @@ router.post("/book-appointment", auth, async (req, res) => {
     console.log("🔍 Saving appointment with all fields...");
     console.log("🔍 Appointment data preview:", {
       user_id: req.userId,
-      attorney_id: doctor_id,
-      doctor_id,
+      attorney_id: actualAttorneyId,
       date,
       time,
       subject,
@@ -889,7 +852,7 @@ router.post("/book-appointment", auth, async (req, res) => {
       message: "Appointment booked successfully",
       appointment: {
         id: appointment._id,
-        doctor_id: appointment.doctor_id,
+        attorney_id: appointment.attorney_id,
         date: appointment.date,
         time: appointment.time,
         status: appointment.status
@@ -928,8 +891,20 @@ router.put("/appointments/:appointmentId/status", auth, async (req, res) => {
       return res.status(404).json({ message: "Attorney not found" });
     }
 
-    if (appointment.doctor_id.toString() !== attorney._id.toString()) {
+    // Check if this appointment belongs to this attorney (check both Attorney and Code model IDs)
+    const Code = require("../models/Code");
+    const codeRecord = await Code.findOne({ email: attorney.attorneyEmail }).lean();
+    
+    const validIds = [attorney._id.toString()];
+    if (codeRecord) {
+      validIds.push(codeRecord._id.toString());
+    }
+    
+    const appointmentAttorneyId = appointment.attorney_id?.toString();
+    if (!validIds.includes(appointmentAttorneyId)) {
       console.log("❌ Unauthorized: Appointment does not belong to this attorney");
+      console.log("🔍 Appointment attorney_id:", appointmentAttorneyId);
+      console.log("🔍 Valid IDs:", validIds);
       return res.status(403).json({ message: "You can only update your own appointments" });
     }
 
@@ -952,6 +927,60 @@ router.put("/appointments/:appointmentId/status", auth, async (req, res) => {
   }
 });
 
+// ===== DELETE Appointment =====
+router.delete("/appointments/:appointmentId", auth, async (req, res) => {
+  try {
+    console.log("🔍 Delete appointment request");
+    console.log("🔍 User role:", req.userRole);
+    console.log("🔍 User ID:", req.userId);
+    
+    const { appointmentId } = req.params;
+
+    // Find the appointment
+    const appointment = await Appointment.findById(appointmentId);
+    if (!appointment) {
+      console.log("❌ Appointment not found:", appointmentId);
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // Check if this appointment belongs to this attorney
+    const attorney = await Attorney.findById(req.userId);
+    if (!attorney) {
+      return res.status(404).json({ message: "Attorney not found" });
+    }
+
+    // Check if this appointment belongs to this attorney (check both Attorney and Code model IDs)
+    const Code = require("../models/Code");
+    const codeRecord = await Code.findOne({ email: attorney.attorneyEmail }).lean();
+    
+    const validIds = [attorney._id.toString()];
+    if (codeRecord) {
+      validIds.push(codeRecord._id.toString());
+    }
+    
+    const appointmentAttorneyId = appointment.attorney_id?.toString();
+    if (!validIds.includes(appointmentAttorneyId)) {
+      console.log("❌ Unauthorized: Appointment does not belong to this attorney");
+      return res.status(403).json({ message: "You can only delete your own appointments" });
+    }
+
+    // Soft delete - update isActive and deletedAt
+    appointment.isActive = false;
+    appointment.deletedAt = new Date();
+    appointment.deletionReason = "Deleted by attorney";
+    await appointment.save();
+
+    console.log("✅ Appointment soft deleted:", appointmentId);
+
+    res.json({
+      message: "Appointment deleted successfully"
+    });
+  } catch (error) {
+    console.error("❌ Error deleting appointment:", error);
+    res.status(500).json({ message: "Failed to delete appointment" });
+  }
+});
+
 // ===== GET Attorney Consultations =====
 router.get("/consultations", auth, async (req, res) => {
   try {
@@ -966,15 +995,15 @@ router.get("/consultations", auth, async (req, res) => {
       return res.status(404).json({ message: "Attorney profile not found" });
     }
 
-    const consultations = await Consultation.find({ doctor_id: attorney._id })
-      .populate('patient_id', 'name email')
+    const consultations = await Consultation.find({ attorney_id: attorney._id })
+      .populate('client_id', 'name email')
       .sort({ updatedAt: -1 })
       .lean();
 
     const formattedConsultations = consultations.map(consultation => ({
       id: consultation._id,
-      patient_name: consultation.patient_id?.name || "Unknown",
-      patient_email: consultation.patient_id?.email || "",
+      patient_name: consultation.client_id?.name || "Unknown",
+      patient_email: consultation.client_id?.email || "",
       status: consultation.status,
       subject: consultation.subject || "",
       createdAt: consultation.createdAt,
@@ -1018,7 +1047,7 @@ router.post("/consultation/:consultationId/message", auth, async (req, res) => {
       return res.status(404).json({ message: "Consultation not found" });
     }
 
-    if (consultation.doctor_id.toString() !== attorney._id.toString()) {
+    if (consultation.attorney_id.toString() !== attorney._id.toString()) {
       return res.status(403).json({ message: "Unauthorized access to this consultation" });
     }
 
@@ -1072,7 +1101,7 @@ router.get("/consultation/:consultationId/messages", auth, async (req, res) => {
       return res.status(404).json({ message: "Consultation not found" });
     }
 
-    if (consultation.doctor_id.toString() !== attorney._id.toString()) {
+    if (consultation.attorney_id.toString() !== attorney._id.toString()) {
       return res.status(403).json({ message: "Unauthorized access to this consultation" });
     }
 

@@ -13,6 +13,33 @@
   width: calc(100% - 260px);
 }
 
+/* Success/Error Messages */
+.success-message {
+  text-align: center;
+  padding: 12px;
+  margin: 10px 0;
+  background-color: #d4edda;
+  color: #155724;
+  border-radius: 4px;
+  border: 1px solid #c3e6cb;
+}
+
+.error-message {
+  text-align: center;
+  padding: 12px;
+  margin: 10px 0;
+  background-color: #f8d7da;
+  color: #721c24;
+  border-radius: 4px;
+  border: 1px solid #f5c6cb;
+}
+
+.loading-container, .empty-container {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
 /* Title */
 .appointments-content h1 {
   font-size: 26px;
@@ -29,8 +56,6 @@
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 6px 15px rgba(0,0,0,0.1);
-
-  /* 👇 Extra spacing so it doesn’t stick */
   margin-top: 20px;
   margin-bottom: 30px;
 }
@@ -52,6 +77,16 @@
 
 .appointments-table tr:hover {
   background-color: #f9f5fc;
+}
+
+/* Client Info */
+.client-info {
+  max-width: 200px;
+}
+
+/* Truncate cell */
+.truncate-cell {
+  max-width: 150px;
 }
 
 /* Status Colors */
@@ -85,6 +120,11 @@
   font-weight: 600;
 }
 
+.status.expired {
+  color: #8b4513;
+  font-weight: 600;
+}
+
 /* Status Select Dropdown */
 .status-select {
   padding: 6px 12px;
@@ -94,6 +134,7 @@
   background-color: #fff;
   cursor: pointer;
   transition: border-color 0.3s ease;
+  min-width: 120px;
 }
 
 .status-select:focus {
@@ -107,3 +148,221 @@
   cursor: not-allowed;
   opacity: 0.6;
 }
+
+/* Status-specific dropdown styles */
+.status-select.status-pending {
+  /* border-left: 4px solid #af669a; */
+}
+
+.status-select.status-confirmed {
+  border-left: 4px solid #28a745;
+}
+
+.status-select.status-completed {
+  border-left: 4px solid green;
+}
+
+.status-select.status-cancelled {
+  border-left: 4px solid #dc3545;
+}
+
+.status-select.status-rejected {
+  border-left: 4px solid #6c757d;
+}
+
+.status-select.status-expired {
+  border-left: 4px solid #8b4513;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-view, .btn-delete {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-view {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-view:hover {
+  background-color: #0056b3;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
+}
+
+.btn-delete:disabled {
+  background-color: #f8d7da;
+  cursor: not-allowed;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--color-dark-purple);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 15px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-row.full-width {
+  flex-direction: column;
+}
+
+.detail-row label {
+  font-weight: 600;
+  color: #555;
+  min-width: 150px;
+}
+
+.detail-row span {
+  color: #333;
+  flex: 1;
+}
+
+.detail-row.full-width span {
+  margin-top: 8px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #eee;
+}
+
+.btn-close, .btn-cancel, .btn-confirm-delete {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.btn-close, .btn-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-close:hover, .btn-cancel:hover {
+  background-color: #5a6268;
+}
+
+.btn-confirm-delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-confirm-delete:hover {
+  background-color: #c82333;
+}
+
+.btn-confirm-delete:disabled {
+  background-color: #f8d7da;
+  cursor: not-allowed;
+}
+
+.warning-text {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .appointments-content {
+    margin-left: 0;
+    padding: 20px;
+    width: 100%;
+  }
+  
+  .appointments-table {
+    font-size: 12px;
+  }
+  
+  .appointments-table th,
+  .appointments-table td {
+    padding: 10px;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .btn-view, .btn-delete {
+    width: 100%;
+  }
+}
+
